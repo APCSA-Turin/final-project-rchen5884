@@ -1,5 +1,6 @@
 package com.example;
-import java.io.IOException;
+import javax.swing.*;
+import java.net.URL;
 import org.json.JSONObject;
 
 /**
@@ -12,6 +13,7 @@ public class App
     {
         String data = "";
         try {
+            // Get JSON data from API
             String JSONdata = API.getData("https://dog.ceo/api/breeds/image/random");
             System.out.println(JSONdata);
             data = JSONdata;
@@ -20,13 +22,26 @@ public class App
             e.printStackTrace();
         }
 
-        JSONObject obj = new JSONObject(data);
-        String image = obj.toString();
+        try {
+            // Parse the JSON string
+            JSONObject obj = new JSONObject(data);
+            String image = obj.getString("message"); // Extract the image URL
+            System.out.println(image);    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        int idx = image.indexOf(",");
-        int idx2 = image.indexOf(":");
-        image = image.substring(idx2+1, idx);
-        
-        System.out.println(image);
+        JSONObject obj = new JSONObject(data);
+        String image = obj.getString("message"); // Extract image URL
+        System.out.println("Image URL: " + image);
+
+        // Display in a GUI window
+        JFrame frame = new JFrame("Dog Image");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(600, 600);
+        ImageIcon imageIcon = new ImageIcon(new URL(image));
+        JLabel label = new JLabel(imageIcon);
+        frame.add(label);
+        frame.setVisible(true);
     }
 }

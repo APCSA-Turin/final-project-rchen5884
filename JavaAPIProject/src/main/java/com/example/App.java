@@ -7,10 +7,11 @@ import org.json.JSONObject;
  * Hello world!
  *
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
+public class App extends JFrame {
+    JFrame frame;
+    JLabel displayField;
+    ImageIcon image;
+    public static void main( String[] args ) {
         String data = "";
         try {
             // Get JSON data from API
@@ -35,13 +36,20 @@ public class App
         String image = obj.getString("message"); // Extract image URL
         System.out.println("Image URL: " + image);
 
-        // Display in a GUI window
-        JFrame frame = new JFrame("Dog Image");
+        App i = new App(image);
+    }
+
+    public App(String thing) {
+        frame = new JFrame("Image Display Test");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
-        ImageIcon imageIcon = new ImageIcon(new URL(image));
-        JLabel label = new JLabel(imageIcon);
-        frame.add(label);
+        try {
+            image = new ImageIcon(getClass().getResource(thing));
+            displayField = new JLabel(thing);
+        } 
+        catch(Exception e) {
+            System.out.println("Image cannot be found");
+        }
+        frame.setSize(400,400);
         frame.setVisible(true);
     }
 }

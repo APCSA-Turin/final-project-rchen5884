@@ -2,6 +2,7 @@ package com.example;
 import javax.swing.*;
 import java.net.URL;
 import org.json.JSONObject;
+import java.util.Scanner;
 
 /**
  * Hello world!
@@ -46,7 +47,7 @@ public class App extends JFrame {
             image = new ImageIcon(getClass().getResource(thing));
             displayField = new JLabel(thing);
         } 
-        catch(Exception e) {
+        catch (Exception e) {
             System.out.println("Image cannot be found");
         }
         frame.setSize(400,400);

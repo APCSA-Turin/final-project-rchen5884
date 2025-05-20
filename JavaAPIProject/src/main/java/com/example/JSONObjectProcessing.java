@@ -4,14 +4,28 @@ import org.json.JSONObject;
     
 public class JSONObjectProcessing {
 public static void main(String[] args) {
-    /*this string is just an example, you would be pulling the json data from a server*/
-    String jsonString = "{\"name\":\"Pikachu\",\"type\":\"Electric\",\"level\":5}";
-    //create the JSON object 
-    JSONObject obj = new JSONObject(jsonString);
-    //you can get the value of the key by calling the getString(key) method of JSON Object
-    String name = obj.getString("name");
-    String type = obj.getString("type");
-    int level = obj.getInt("level");            
-    System.out.println(name + " is an " + type + " type at level " + level);
+    String data = "";
+        try {
+            // Get JSON data from API
+            String JSONdata = API.getData("https://dog.ceo/api/breeds/image/random");
+            System.out.println(JSONdata);
+            data = JSONdata;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            // Parse the JSON string
+            JSONObject obj = new JSONObject(data);
+            String image = obj.getString("message"); // Extract the image URL
+            System.out.println(image);    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JSONObject obj = new JSONObject(data);
+        String image = obj.getString("message"); // Extract image URL
+        System.out.println("Image URL: " + image);
     }
 }

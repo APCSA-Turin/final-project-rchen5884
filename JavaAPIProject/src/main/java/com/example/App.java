@@ -1,53 +1,59 @@
 package com.example;
 
 import javax.swing.*;
-
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.net.URL;
-import org.json.JSONObject;
 import java.util.Scanner;
 
 public class App extends JFrame {
     private JLabel displayField;
     private static String currentImageUrl;
+    private static boolean play = true;
+    private static double wins = 0.0;
+    private static int rounds = 0;
+    private static Scanner mainScanner = new Scanner(System.in); // Single scanner for entire program
     
     public static void main(String[] args) {
-        boolean play = true;
-        int wins = 0;
-        int rounds = 0;
+        while (play) {
+            DogURL url = new DogURL();
+            currentImageUrl = url.getURL();
+            System.out.println(currentImageUrl);
+            
+            if (currentImageUrl.isEmpty()) {
+                System.err.println("Failed to get image URL from API");
+                continue; // Skip to next iteration instead of returning
+            }
 
-        DogURL url = new DogURL();
-        currentImageUrl = url.getURL();
-        System.out.println(currentImageUrl);
-        if (currentImageUrl.isEmpty()) {
-            System.err.println("Failed to get image URL from API");
-            return;
+            // Show GUI immediately
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = new App(currentImageUrl);
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Changed to dispose
+            });
+            
+            // Start the guessing game
+            startGuessingGame(getRandomDog(currentImageUrl));
+            
+            // Calculate and display win rate
+            double winRate = (rounds == 0) ? 0 : (wins / rounds) * 100;
+            System.out.printf("Current stats: %.1f%% win rate (%d wins out of %d rounds)%n", 
+                            winRate, (int)wins, rounds);
         }
-
-        // Show GUI immediately
-        SwingUtilities.invokeLater(() -> new App(currentImageUrl));
-        
-        // Start the guessing game in console
-        startGuessingGame(getRandomDog(currentImageUrl));
+        mainScanner.close(); // Close scanner only when completely done
     }
 
     public App(String imageUrl) {
-        setTitle("Guess the Dog Breed"); // title of the GUI screen
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // the GUI closes when the program is closed
-        setSize(800, 600); // the size of the GUI screen
+        setTitle("Guess the Dog Breed");
+        setSize(800, 600);
         
         try {
-            // Load image with better scaling
-            ImageIcon originalIcon = new ImageIcon(new URL(imageUrl)); // Make an "ImageIcon" object using the generated URL
-            // Creates the image based on the ImageIcon and sets the dimensions of the image
-            Image scaledImage = originalIcon.getImage().getScaledInstance(750, 550, Image.SCALE_SMOOTH); 
-            displayField = new JLabel(new ImageIcon(scaledImage)); //
+            ImageIcon originalIcon = new ImageIcon(new URL(imageUrl));
+            Image scaledImage = originalIcon.getImage().getScaledInstance(750, 550, Image.SCALE_SMOOTH);
+            displayField = new JLabel(new ImageIcon(scaledImage));
             displayField.setHorizontalAlignment(JLabel.CENTER);
             add(displayField);
-        } catch (Exception e) { // if the image somehow doesn't load (this should never happen)
-            System.out.println("Error loading image: " + e.getMessage()); // Prints the error in the console
-            add(new JLabel("Could not load image", JLabel.CENTER)); // lets the user know the image couldn't load in the GUI
+        } catch (Exception e) {
+            System.out.println("Error loading image: " + e.getMessage());
+            add(new JLabel("Could not load image", JLabel.CENTER));
         }
         
         setLocationRelativeTo(null);
@@ -55,10 +61,8 @@ public class App extends JFrame {
     }
 
     public static void startGuessingGame(String correctDog) {
-        // Small delay to ensure GUI is up
         try { Thread.sleep(500); } catch (InterruptedException e) {}
         
-        Scanner scanner = new Scanner(System.in);
         int count = 5;
         Hint h = new Hint(correctDog);
         String hint = h.getHint();
@@ -73,24 +77,42 @@ public class App extends JFrame {
             }
             
             System.out.print("Your guess: ");
-            String guess = scanner.nextLine().trim().toLowerCase();
+            String guess = mainScanner.nextLine().trim().toLowerCase();
             
-            if (guess.equals(correctDog.toLowerCase())) { // if the guess is correct
+            if (guess.equals(correctDog.toLowerCase())) {
                 System.out.println("\nYou win! It's a " + correctDog + "!");
-                break;
-            } else if (count == 1 && guess.equals("hint")) { // if they wish to get a hint
+                wins++;
+                rounds++;
+                askToPlayAgain();
+                return;
+            } else if (count == 1 && guess.equals("hint")) {
                 System.out.println("Hint: " + hint);
-            } else { // if they get it wrong
-                count--; // remove one guess
-                if (count == 0) { // if they run out of guesses, end the program
+            } else {
+                count--;
+                if (count == 0) {
                     System.out.println("\nYou ran out of guesses.");
                     System.out.println("The correct breed was: " + correctDog);
-                } else { // if they still have guesses left, allow them to guess again
+                    rounds++;
+                    askToPlayAgain();
+                } else {
                     System.out.println("Try again!");
                 }
             }
         }
-        scanner.close();
+    }
+
+    private static void askToPlayAgain() {
+        System.out.print("Would you like to play again? (yes/no): ");
+        String replay = mainScanner.nextLine().trim().toLowerCase();
+        play = replay.equals("yes") || replay.equals("y");
+        
+        if (!play) {
+            double winRate = (rounds == 0) ? 0 : (wins / rounds) * 100;
+            System.out.println("\nFinal Results:");
+            System.out.println("Wins: " + (int)wins + " out of " + rounds + " rounds");
+            System.out.println("Win Rate: " + String.format("%.1f", winRate) + "%");
+            System.out.println("Thanks for playing!");
+        }
     }
 
     public static String getRandomDog(String imageUrl) {
@@ -102,3 +124,166 @@ public class App extends JFrame {
         return breed.contains("-") ? breed.substring(0, breed.indexOf("-")) : breed;
     }
 }
+
+/**
+ * 
+package com.example;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import java.io.IOException;
+
+public class App extends JFrame {
+    private JLabel imageLabel;
+    private JLabel promptLabel;
+    private JTextField guessField;
+    private JButton submitButton;
+    private JLabel hintLabel;
+    private JLabel statsLabel;
+    
+    private String correctDog;
+    private int guessesLeft = 5;
+    private double wins = 0;
+    private int rounds = 0;
+    
+    public App() {
+        setTitle("Dog Breed Guessing Game");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 700);
+        setLayout(new BorderLayout());
+        
+        // Image display
+        imageLabel = new JLabel("", JLabel.CENTER);
+        imageLabel.setPreferredSize(new Dimension(750, 550));
+        add(imageLabel, BorderLayout.CENTER);
+        
+        // Game controls panel
+        JPanel controlPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        promptLabel = new JLabel("Guess the dog breed:");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        controlPanel.add(promptLabel, gbc);
+        
+        guessField = new JTextField(20);
+        gbc.gridx = 1;
+        controlPanel.add(guessField, gbc);
+        
+        submitButton = new JButton("Submit");
+        gbc.gridx = 2;
+        controlPanel.add(submitButton, gbc);
+        
+        hintLabel = new JLabel(" ");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 3;
+        controlPanel.add(hintLabel, gbc);
+        
+        statsLabel = new JLabel(" ");
+        gbc.gridy = 2;
+        controlPanel.add(statsLabel, gbc);
+        
+        add(controlPanel, BorderLayout.SOUTH);
+        
+        // Set up event handlers
+        submitButton.addActionListener(this::handleGuess);
+        guessField.addActionListener(this::handleGuess);
+        
+        // Start first round
+        startNewRound();
+        
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    private void startNewRound() {
+        rounds++;
+        guessesLeft = 5;
+        
+        try {
+            // Get random dog image
+            String imageUrl = new DogURL().getURL();
+            correctDog = getRandomDog(imageUrl);
+            
+            // Load and display image
+            Image image = ImageIO.read(new URL(imageUrl)).getScaledInstance(750, 550, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(image));
+            
+            // Update UI
+            promptLabel.setText("Guess the dog breed (" + guessesLeft + " guesses left):");
+            hintLabel.setText(" ");
+            guessField.setText("");
+            guessField.requestFocus();
+            
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error loading dog image", "Error", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+    }
+    
+    private void handleGuess(ActionEvent e) {
+        String guess = guessField.getText().trim().toLowerCase();
+        
+        if (guess.equals(correctDog.toLowerCase())) {
+            // Correct guess
+            wins++;
+            showResult(true);
+        } else {
+            // Incorrect guess
+            guessesLeft--;
+            
+            if (guessesLeft == 1) {
+                hintLabel.setText("Hint: " + new Hint(correctDog).getHint());
+            }
+            
+            if (guessesLeft > 0) {
+                promptLabel.setText("Try again! (" + guessesLeft + " guesses left):");
+                guessField.setText("");
+                guessField.requestFocus();
+            } else {
+                showResult(false);
+            }
+        }
+    }
+    
+    private void showResult(boolean won) {
+        String message = won ? "You win! It's a " + correctDog + "!" 
+                           : "Out of guesses! It was a " + correctDog + ".";
+        JOptionPane.showMessageDialog(this, message, "Round Over", JOptionPane.INFORMATION_MESSAGE);
+        
+        // Update stats
+        double winRate = (rounds == 0) ? 0 : (wins / rounds) * 100;
+        statsLabel.setText(String.format("Wins: %d/%d (%.1f%%)", (int)wins, rounds, winRate));
+        
+        // Ask to play again
+        int option = JOptionPane.showConfirmDialog(this, 
+            "Play again?", 
+            "Continue?", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (option == JOptionPane.YES_OPTION) {
+            startNewRound();
+        } else {
+            System.exit(0);
+        }
+    }
+    
+    private String getRandomDog(String imageUrl) {
+        int startIdx = imageUrl.indexOf("breeds/") + 7;
+        String temp = imageUrl.substring(startIdx);
+        int endIdx = temp.indexOf("/");
+        String breed = temp.substring(0, endIdx);
+
+        return breed.contains("-") ? breed.substring(0, breed.indexOf("-")) : breed;
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(App::new);
+    }
+}
+ */

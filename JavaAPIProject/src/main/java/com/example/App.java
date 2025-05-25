@@ -2,6 +2,7 @@ package com.example;
 
 import javax.swing.*;
 
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.net.URL;
 import org.json.JSONObject;
@@ -12,6 +13,10 @@ public class App extends JFrame {
     private static String currentImageUrl;
     
     public static void main(String[] args) {
+        boolean play = true;
+        int wins = 0;
+        int rounds = 0;
+
         DogURL url = new DogURL();
         currentImageUrl = url.getURL();
         System.out.println(currentImageUrl);

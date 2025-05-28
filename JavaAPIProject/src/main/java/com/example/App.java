@@ -26,7 +26,7 @@ public class App extends JFrame {
         setSize(800, 700);
         setLayout(new BorderLayout());
         
-        // Image display
+        // This is the image display
         imageLabel = new JLabel("", JLabel.CENTER);
         imageLabel.setPreferredSize(new Dimension(750, 550));
         add(imageLabel, BorderLayout.CENTER);
@@ -91,7 +91,7 @@ public class App extends JFrame {
             Image image = ImageIO.read(new URL(imageUrl)).getScaledInstance(750, 550, Image.SCALE_SMOOTH);
             imageLabel.setIcon(new ImageIcon(image));
             
-            // Update UI
+            // Updates UI after each guess
             promptLabel.setText("Guess the dog breed (" + guessesLeft + " guesses left):");
             hintLabel.setText(" ");
             guessField.setText("");
@@ -103,7 +103,7 @@ public class App extends JFrame {
     }
     
     public void handleGuess(ActionEvent e) {
-        String guess = guessField.getText().trim().toLowerCase();
+        String guess = guessField.getText().trim().toLowerCase(); // makes their guess lowercase
         
         if (guess.equals(correctDog.toLowerCase())) {
             // Correct guess
@@ -139,7 +139,14 @@ public class App extends JFrame {
         JOptionPane.showMessageDialog(this, message, "Round Over", JOptionPane.INFORMATION_MESSAGE);
         
         // Update stats
-        double winRate = (rounds == 0) ? 0 : (wins / rounds) * 100;
+        double winRate = 0;
+        if (rounds == 0) {
+            winRate = 0;
+        }
+        else {
+            winRate = (wins / rounds) * 100;
+        }
+
         statsLabel.setText(String.format("Wins: %d/%d (%.1f%%)", (int)wins, rounds, winRate));
         
         // Ask to play again
@@ -153,13 +160,16 @@ public class App extends JFrame {
         }
     }
     
-    public String getRandomDog(String imageUrl) {
+    public String getRandomDog(String imageUrl) { // gets the dog breed from the URL link itself
         int startIdx = imageUrl.indexOf("breeds/") + 7;
         String temp = imageUrl.substring(startIdx);
         int endIdx = temp.indexOf("/");
         String breed = temp.substring(0, endIdx);
 
-        return breed.contains("-") ? breed.substring(0, breed.indexOf("-")) : breed;
+        if (breed.contains("-")) { // cuts the String off of the location of the dash (after the dash is irrelevant things)
+            return breed.substring(0, breed.indexOf("-"));
+        }
+        return breed;
     }
 
     public static void main(String[] args) {

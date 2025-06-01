@@ -1,11 +1,24 @@
 package com.example;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.net.URL;
-import javax.imageio.ImageIO;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class App extends JFrame {
     private JLabel imageLabel;
@@ -147,7 +160,9 @@ public class App extends JFrame {
             winRate = (wins / rounds) * 100;
         }
 
-        statsLabel.setText(String.format("Wins: %d/%d (%.1f%%)", (int)wins, rounds, winRate));
+        // In the showResult method, replace the statsLabel.setText() line with:
+        String statsText = "Games: " + rounds + " | Wins: " + (int)wins + " | Success Rate: " + Math.round(winRate) + " percent";
+        statsLabel.setText(statsText);
         
         // Ask to play again
         int option = JOptionPane.showConfirmDialog(this, "Play again?", "Continue?", JOptionPane.YES_NO_OPTION);

@@ -161,7 +161,7 @@ public class App extends JFrame {
         }
 
         // In the showResult method, replace the statsLabel.setText() line with:
-        String statsText = "Games: " + rounds + " | Wins: " + (int)wins + " | Success Rate: " + Math.round(winRate) + " percent";
+        String statsText = "Games: " + rounds + " | Wins: " + (int)wins + " | Success Rate: " + Math.round(winRate) + " %";
         statsLabel.setText(statsText);
         
         // Ask to play again
